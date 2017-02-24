@@ -2,3 +2,4 @@
 target
 vault-java.iml
 .gradle
+build/

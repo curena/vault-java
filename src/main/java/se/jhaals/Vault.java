@@ -2,16 +2,15 @@ package se.jhaals;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Java API for Hashicorp's Vault project. A tool for managing secrets.
@@ -59,17 +58,19 @@ public class Vault {
     public VaultResponse read(String path) {
         WebTarget target = baseTarget.path(String.format("/v1/%s", path));
         Response response = null;
+
         try {
             response = target.request()
                     .accept("application/json")
                     .header("X-Vault-Token", this.vaultToken)
                     .get(Response.class);
             if (response.getStatus() == 200) {
-
-                //System.out.println("HTTP-Read:" + response.readEntity(String.class));
                 return response.readEntity(VaultResponse.class);
             }
             ErrorResponse error = response.readEntity(ErrorResponse.class);
+            for (String e : error.getErrors()) {
+                System.out.println("Status: " + response.getStatus() + " Error: " + e);
+            }
             throw new VaultException(response.getStatus(), error.getErrors());
         } finally {
             if (response != null) {
@@ -87,7 +88,7 @@ public class Vault {
      *               The generic backend use 'value' as key
      * @throws VaultException if operation fails
      */
-    public void write(String path, Map<String, String> secret) {
+    public VaultResponse write(String path, Map<String, String> secret) {
         WebTarget target = baseTarget.path(String.format("/v1/%s", path));
         Response response = null;
         try {
@@ -96,8 +97,11 @@ public class Vault {
                     .header("X-Vault-Token", this.vaultToken)
                     .post(Entity.entity(secret, MediaType.APPLICATION_JSON_TYPE));
 
-            if (response.getStatus() != 204) {
+            if (response.getStatus() == 204) {
+                return response.readEntity(VaultResponse.class);
+            } else {
                 ErrorResponse error = response.readEntity(ErrorResponse.class);
+                outputErrors(response.getStatus(), error);
                 throw new VaultException(response.getStatus(), error.getErrors());
             }
         } finally {
@@ -281,6 +285,12 @@ public class Vault {
 
         public List<String> getErrors() {
             return errors;
+        }
+    }
+
+    private void outputErrors(int status, ErrorResponse error) {
+        for (String e : error.getErrors()) {
+            System.out.println("Status: " + status + " Error: " + e);
         }
     }
 

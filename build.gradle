@@ -9,6 +9,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.5.0'
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.5.1'
     compile 'org.projectlombok:lombok:1.16.8'
+//    compile 'org.slf4j:slf4j-api:1.7.5'
 
     testCompile 'junit:junit:4.12'
 }

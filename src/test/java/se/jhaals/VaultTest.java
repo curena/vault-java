@@ -9,14 +9,13 @@ import java.util.Map;
 
 public class VaultTest extends TestCase {
 
-    private String token = "7efdbf54-cdb3-70bf-3b9e-96b52f0f50dd"; //System.getenv("VAULT_TOKEN");
-    private String vault_server_url = "http://192.168.99.100:8200";
+    private String token = "ae54b707-5e8a-d1a2-36da-591e9f5f09c2"; //System.getenv("VAULT_TOKEN");
+    private String vault_server_url = "http://localhost:8200";
     private Vault vault;
 
     @Before
     public void setUp() {
         this.vault = new Vault(vault_server_url, token);
-
     }
 
     public void testWrite() throws Exception {
@@ -36,7 +35,7 @@ public class VaultTest extends TestCase {
         VaultResponse result = vault.read("postgresql/creds/readonly");
         assertTrue(result.getLeaseId().contains("postgresql/creds/readonly/"));
         assertTrue(result.getRenewable());
-        assertEquals(result.getLeaseDuration(), "2592000");
+        assertEquals(result.getLeaseDuration(), "3600");
         assertNotNull(result.getData());
         assertNotNull(result.getData().get("password"));
         assertNotNull(result.getData().get("username"));
